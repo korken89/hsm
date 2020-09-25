@@ -14,10 +14,15 @@ namespace {
 struct S1 {
 };
 struct S2 {
+    static constexpr auto on_entry()
+    {
+        return [](auto event, auto...) { (void)event.name; };
+    }
 };
 
 // Events
 struct e1 {
+    std::string name = "e1";
 };
 struct e2 {
     e2(const std::shared_ptr<std::promise<void>>& called)
@@ -25,6 +30,7 @@ struct e2 {
     {
     }
     std::shared_ptr<std::promise<void>> called;
+    std::string name = "e2";
 };
 struct e3 {
 };
