@@ -20,4 +20,4 @@ jobs:
           packages: conan
         
       - name: Conan Install
-        run: conan install . -s compiler.libcxx=libstdc++11 --build missing
+        run: conan install . --build missing
