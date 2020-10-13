@@ -21,3 +21,11 @@ jobs:
         
       - name: Conan Install
         run: conan install . --build missing
+
+      - name: Install Hsm
+        run: |
+         cmake .
+         cmake --build . --target install
+        
+      - name: Run Hsm Tests
+        run: ctest -VV
