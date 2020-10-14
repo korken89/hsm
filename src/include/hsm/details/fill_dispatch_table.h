@@ -175,7 +175,7 @@ constexpr auto filter_transitions = [](auto transitions, auto eventTypeid) {
     return bh::filter(transitions, isEvent);
 };
 
-constexpr auto fill_dispatch_table_with_transitions = [](
+auto fill_dispatch_table_with_transitions = [](
     auto rootState, auto&& statesMap, auto&& optionalDependency, auto transitions)
 {
     auto eventTypeids = collect_event_typeids_recursive_with_transitions(transitions);
