@@ -22,6 +22,7 @@
 #include <boost/hana/mult.hpp>
 #include <boost/hana/size.hpp>
 #include <boost/hana/type.hpp>
+#include <boost/hana/functional/capture.hpp>
 
 namespace hsm {
 
@@ -175,24 +176,31 @@ constexpr auto filter_transitions = [](auto transitions, auto eventTypeid) {
     return bh::filter(transitions, isEvent);
 };
 
-auto fill_dispatch_table_with_transitions = [](
+
+constexpr auto fill_dispatch_table_for_filtered_transitions = [](auto rootState, auto&& statesMap, auto&& optionalDependency, auto eventTypeid, auto transition){
+    using Event = typename decltype(eventTypeid)::type;
+
+    constexpr auto combinedStateTypeids = getCombinedStateTypeids(rootState);
+    constexpr StateIdx states = nStates(rootState) * nParentStates(rootState);    
+    auto& dispatchTable = DispatchTable<states, Event>::table;
+
+    addDispatchTableEntry(combinedStateTypeids, transition, dispatchTable, eventTypeid, statesMap, optionalDependency);
+    addDispatchTableEntryOfSubMachineExits(combinedStateTypeids, transition, dispatchTable, eventTypeid, statesMap, optionalDependency);
+};
+
+constexpr auto fill_dispatch_table_for_event = [](auto rootState, auto&& statesMap, auto&& optionalDependency, auto transitions, auto eventTypeid){
+    
+    auto filteredTransitions = filter_transitions(transitions, eventTypeid);
+
+    bh::for_each(filteredTransitions, bh::capture(rootState, statesMap, optionalDependency, eventTypeid)(fill_dispatch_table_for_filtered_transitions));
+};
+
+constexpr auto fill_dispatch_table_with_transitions = [](
     auto rootState, auto&& statesMap, auto&& optionalDependency, auto transitions)
 {
     auto eventTypeids = collect_event_typeids_recursive_with_transitions(transitions);
-    constexpr auto combinedStateTypeids = getCombinedStateTypeids(rootState);
-    constexpr StateIdx states = nStates(rootState) * nParentStates(rootState);
 
-    bh::for_each(eventTypeids, [&](auto eventTypeid) {
-        using Event = typename decltype(eventTypeid)::type;
-
-        auto filteredTransitions = filter_transitions(transitions, eventTypeid);
-        auto& dispatchTable = DispatchTable<states, Event>::table;
-
-        bh::for_each(filteredTransitions, [&](auto transition) {
-            addDispatchTableEntry(combinedStateTypeids, transition, dispatchTable, eventTypeid, statesMap, optionalDependency);
-            addDispatchTableEntryOfSubMachineExits(combinedStateTypeids, transition, dispatchTable, eventTypeid, statesMap, optionalDependency);
-        });
-    });
+    bh::for_each(eventTypeids, bh::capture(rootState, statesMap, optionalDependency, transitions)(fill_dispatch_table_for_event));
 
 };
 

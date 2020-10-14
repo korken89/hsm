@@ -59,7 +59,7 @@ constexpr auto collect_initial_state_stateidx = [](auto rootState, auto parentSt
  *  [1 -> [3, 1]],
  *  [2 -> [0, 2]]]
  */
-constexpr auto make_initial_state_map = [](auto rootState) {
+auto make_initial_state_map = [](auto rootState) {
     constexpr auto parentStateTypeids = collect_parent_state_typeids(rootState);
     constexpr auto initialStates = collect_initial_state_stateidx(rootState, parentStateTypeids);
     return bh::to_map(to_pairs(bh::zip(parentStateTypeids, initialStates)));
