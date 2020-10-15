@@ -27,5 +27,5 @@ jobs:
          cmake . -DCMAKE_BUILD_TYPE=DEBUG
          cmake --build . --target install
 
-    - name: Run Hsm Tests
-      run: ctest -VV
+      - name: Run Hsm Tests
+        run: ctest -VV
