@@ -30,7 +30,7 @@ add_executable(
         )
 
 set_property(TARGET hsmUnitTests PROPERTY
-        MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+        MSVC_RUNTIME_LIBRARY "MultiThreadedDebug$<$<CONFIG:Debug>:Debug>")
 
 target_link_libraries(hsmUnitTests
         PRIVATE

@@ -24,7 +24,7 @@ jobs:
 
       - name: Install Hsm
         run: |
-         cmake . -DCMAKE_BUILD_TYPE=RELEASE
+         cmake . -DCMAKE_BUILD_TYPE=DEBUG
          cmake --build . --target hsmUnitTests
         
       - name: Run Hsm Tests
