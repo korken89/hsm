@@ -39,13 +39,11 @@ constexpr auto collect_initial_state_stateidx = [](auto rootState, auto parentSt
         using ParentState = typename decltype(parentStateTypeid)::type;
 
         constexpr auto initialStates = collect_initial_states(ParentState {});
-        constexpr auto initialStatesStateIdx
-            = bh::transform(initialStates, [rootState](auto initialState) {
+        
+        return bh::transform(initialStates, [rootState](auto initialState) {
                   return getCombinedStateIdx(
                       getCombinedStateTypeids(rootState), ParentState {}, initialState);
               });
-
-        return initialStatesStateIdx;
     });
 };
 
