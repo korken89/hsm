@@ -78,15 +78,20 @@ constexpr auto fill_initial_state_table = [](auto rootState, auto& initialStateT
     for_each_idx(
         parentStateTypeids,
         [rootState, &initialStateTable](auto parentStateTypeid, auto parentStateId) {
-            constexpr auto initialStates
-                = bh::find(make_initial_state_map(rootState), parentStateTypeid).value();
-            auto initialStatesStateIdx = std::vector<std::size_t>(bh::size(initialStates));
+            bh::apply(
+                [](auto parentStateId, auto& initialStateTable, auto initialStates) {
+                    auto initialStatesStateIdx = std::vector<std::size_t>(bh::size(initialStates));
 
-            for_each_idx(initialStates, [&initialStatesStateIdx](auto stateIdx, auto regionId) {
-                initialStatesStateIdx[regionId] = stateIdx;
-            });
+                    for_each_idx(
+                        initialStates, [&initialStatesStateIdx](auto stateIdx, auto regionId) {
+                            initialStatesStateIdx[regionId] = stateIdx;
+                        });
 
-            initialStateTable.at(parentStateId) = initialStatesStateIdx;
+                    initialStateTable.at(parentStateId) = initialStatesStateIdx;
+                },
+                parentStateId,
+                initialStateTable,
+                bh::find(make_initial_state_map(rootState), parentStateTypeid).value());
         });
 };
 
