@@ -28,4 +28,4 @@ jobs:
          cmake --build . --target install
 
       - name: Run Hsm Tests
-        run: ctest -VV
+        run: ctest -VV -C Debug
