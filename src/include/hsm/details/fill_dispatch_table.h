@@ -215,25 +215,28 @@ constexpr auto getDeferingTransitions = [](auto rootState) {
 constexpr auto hasDeferedEvents
     = [](auto rootState) { return bh::size(getDeferingTransitions(rootState)); };
 
+
+constexpr auto fill_dispatch_table_with_deferred_events_for_transition2 = [](auto rootState, auto transition, auto event){
+            using Event = typename decltype(event)::type;
+            const auto combinedStateTypeids = getCombinedStateTypeids(rootState);
+            constexpr StateIdx states = nStates(rootState) * nParentStates(rootState);
+            auto& dispatchTable = DispatchTable<states, Event>::table;
+            const auto from = getCombinedStateIdx(
+                combinedStateTypeids, resolveSrcParent(transition), resolveSrc(transition));
+            dispatchTable[from].defer = true;
+};
+
+constexpr auto fill_dispatch_table_with_deferred_events_for_transition = [](auto rootState, auto transition){
+        const auto deferredEvents = get_defer_events(resolveExtentedInitialState(transition));
+        bh::for_each(deferredEvents, bh::capture(rootState, transition)(fill_dispatch_table_with_deferred_events_for_transition2));
+};
+
 template <class RootState, class OptionalDependency>
 constexpr auto
 fill_dispatch_table_with_deferred_events(RootState rootState, OptionalDependency /*optionalDependency*/)
 {
-    const auto combinedStateTypeids = getCombinedStateTypeids(rootState);
     const auto transitions = getDeferingTransitions(rootState);
-
-    bh::for_each(transitions, [&](auto transition) {
-        const auto deferredEvents = get_defer_events(resolveExtentedInitialState(transition));
-
-        bh::for_each(deferredEvents, [&](auto event) {
-            using Event = typename decltype(event)::type;
-
-            auto& dispatchTable = DispatchTable<nStates(rootState) * nParentStates(rootState), Event>::table;
-            const auto from = getCombinedStateIdx(
-                combinedStateTypeids, resolveSrcParent(transition), resolveSrc(transition));
-            dispatchTable[from].defer = true;
-        });
-    });
+    bh::for_each(transitions, bh::capture(rootState)(fill_dispatch_table_with_deferred_events_for_transition));
 }
 
 template <class RootState, class StatesMap, class OptionalDependency>
